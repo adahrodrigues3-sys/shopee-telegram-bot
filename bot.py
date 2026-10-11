@@ -2,32 +2,59 @@
 import os
 import requests
 
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 
-def enviar_mensagem(texto):
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("Configure os segredos do Telegram no GitHub.")
+def enviar_mensagem():
+    print("Iniciando teste do bot...")
+
+    if not TOKEN:
+        print("ERRO: o segredo TELEGRAM_TOKEN não foi encontrado.")
         return
 
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    if not CHAT_ID:
+        print("ERRO: o segredo TELEGRAM_CHAT_ID não foi encontrado.")
+        return
 
-    resposta = requests.post(
-        url,
-        json={
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": texto
-        },
-        timeout=20
-    )
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 
-    print("Resposta do Telegram:", resposta.text)
-    resposta.raise_for_status()
+    dados = {
+        "chat_id": CHAT_ID,
+        "text": (
+            "🤖 Teste do bot realizado!\n\n"
+            "A conexão com o Telegram está funcionando."
+        )
+    }
+
+    try:
+        resposta = requests.post(
+            url,
+            json=dados,
+            timeout=20
+        )
+
+        print("Código HTTP:", resposta.status_code)
+
+        try:
+            resultado = resposta.json()
+        except ValueError:
+            print("O Telegram retornou uma resposta não JSON.")
+            print("Resposta:", resposta.text[:500])
+            return
+
+        print("Resultado do Telegram:", resultado)
+
+        if resultado.get("ok"):
+            print("SUCESSO: mensagem enviada ao Telegram!")
+        else:
+            print("ERRO: o Telegram recusou a mensagem.")
+            print("Motivo:", resultado.get("description", "Motivo não informado"))
+
+    except requests.RequestException as erro:
+        print("ERRO DE CONEXÃO:", str(erro))
 
 
 if __name__ == "__main__":
-    enviar_mensagem(
-        "🤖 Bot de ofertas preparado! A integração com a Shopee será configurada depois da aprovação da API."
-    )
+    enviar_mensagem()
 ```
