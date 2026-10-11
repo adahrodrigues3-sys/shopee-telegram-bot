@@ -15,8 +15,9 @@ def enviar_mensagem(texto):
         url,
         json={"chat_id": TELEGRAM_CHAT_ID, "text": texto},
         timeout=20
-    )
-    resposta.raise_for_status()
+    
+    print("Resposta do Telegram:", resposta.text)
+resposta.raise_for_status()
 
 if __name__ == "__main__":
     enviar_mensagem(
